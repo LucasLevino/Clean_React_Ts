@@ -1,7 +1,8 @@
 import { HttpPostClient, HttpPostParams, HttpResponse, HttpStatusCode } from '@/data/protocols/http'
+
 export class HttpPostClientSpy<T, R> implements HttpPostClient<T, R> {
   url?: string
-  body?: object
+  body?: T
   response: HttpResponse<R> = {
     statusCode: HttpStatusCode.ok
   }
