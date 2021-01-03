@@ -2,7 +2,7 @@ import { RemoteAuthentication } from '.'
 import { HttpPostClientSpy } from '@/data/test'
 import { HttpStatusCode } from '@/data/protocols/http'
 import { mockAccountModel, mockAuthentication } from '@/domain/test'
-import { InvalidCrediatialsError, UnespectedError } from '@/domain/erros'
+import { InvalidCredentialsError, UnespectedError } from '@/domain/errors'
 import { AuthenticationParams } from '@/domain/usecases'
 import { AccountModel } from '@/domain/models'
 import faker from 'faker'
@@ -42,7 +42,7 @@ describe('RemoteAuthentication', () => {
       statusCode: HttpStatusCode.unauthorized
     }
     const promise = sut.auth(mockAuthentication())
-    await expect(promise).rejects.toThrow(new InvalidCrediatialsError())
+    await expect(promise).rejects.toThrow(new InvalidCredentialsError())
   })
 
   test('Should throw unexpectedError if HttpPostClient returns 400', async () => {

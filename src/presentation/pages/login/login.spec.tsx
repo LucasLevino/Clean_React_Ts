@@ -1,9 +1,9 @@
 import React from 'react'
 import faker from 'faker'
-
+import { render, RenderResult, fireEvent, cleanup, waitFor } from '@testing-library/react'
 import Login from './login'
-import { render, RenderResult, fireEvent, cleanup } from '@testing-library/react'
-import { ValidationStub, AuthenticationSpy } from '@/presentation/test'
+import { ValidationStub, AuthenticationSpy } from '@/presentation/test/'
+import { InvalidCredentialsError } from '@/domain/errors'
 
 type SutTypes = {
   sut: RenderResult
@@ -38,7 +38,7 @@ const populateEmailField = (sut: RenderResult, email = faker.internet.email()): 
   fireEvent.input(emailInput, { target: { value: email } })
 }
 
-const populatePasswordField = (sut: RenderResult, password = faker.internet.email()): void => {
+const populatePasswordField = (sut: RenderResult, password = faker.internet.password()): void => {
   const passwordInput = sut.getByTestId('password')
   fireEvent.input(passwordInput, { target: { value: password } })
 }
@@ -56,7 +56,7 @@ describe('Login Component', () => {
     const validationError = faker.random.words()
     const { sut } = makeSut({ validationError })
 
-    const errorWrap = sut.getByTestId('errorWrap')
+    const errorWrap = sut.getByTestId('error-wrap')
     expect(errorWrap.childElementCount).toBe(0)
 
     const submitButton = sut.getByTestId('submit') as HTMLButtonElement
@@ -141,5 +141,17 @@ describe('Login Component', () => {
     populateEmailField(sut)
     fireEvent.submit(sut.getByTestId('form'))
     expect(authenticationSpy.callsCount).toBe(0)
+  })
+
+  test('Should present error if Authentication fails', async () => {
+    const { sut, authenticationSpy } = makeSut()
+    const error = new InvalidCredentialsError()
+    jest.spyOn(authenticationSpy, 'auth').mockReturnValueOnce(Promise.reject(error))
+    simulateValidSubmit(sut)
+    const errorWrap = sut.getByTestId('error-wrap')
+    await waitFor(() => errorWrap)
+    const mainError = sut.getByTestId('main-error')
+    expect(mainError.textContent).toBe(error.message)
+    expect(errorWrap.childElementCount).toBe(1)
   })
 })
